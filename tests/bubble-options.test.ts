@@ -122,10 +122,32 @@ test("an accent override changes only its semantic role even when theme roles sh
   } finally { restore(); }
 });
 
+test("configured link labels keep their own color inside headings and restore adjacent heading text", () => {
+  const options = { ...defaultConfig().assistant, heading: "#FFD166", link: "#80DFFF", inlineCode: "#FFE0A3" } as const;
+  const source = "# Before [Heading link](https://example.com) after\n\n## Start [**Bold link** with `Code label`](https://example.com) end";
+  const reply = new AssistantMessageComponent(message(source), true);
+  const native = reply.render(120);
+  const restore = installReplyBubbles(() => theme, options);
+  try {
+    const lines = reply.render(120);
+    assert.equal(foregroundAt(lines, "Before"), fg(options.heading));
+    assert.equal(foregroundAt(lines, "Heading link"), fg(options.link));
+    assert.equal(foregroundAt(lines, "after"), fg(options.heading));
+    assert.equal(foregroundAt(lines, "Start"), fg(options.heading));
+    assert.equal(foregroundAt(lines, "Bold link"), fg(options.link));
+    assert.equal(foregroundAt(lines, "Code label"), fg(options.inlineCode));
+    assert.equal(foregroundAt(lines, "end"), fg(options.heading));
+    assert.deepEqual(reply.render(120), lines);
+  } finally { restore(); }
+  assert.deepEqual(reply.render(120), native);
+});
+
 test("scoped private styles restore on render failure", () => {
   const markdown = new Markdown("fixture", 0, 0, getMarkdownTheme());
   const state = markdown as any;
-  const original = [state.theme, state.defaultTextStyle, state.defaultStylePrefix];
-  assert.throws(() => withMarkdownStyle(markdown, theme, { ...defaultConfig().assistant, inlineCode: "#FFFFAA" }, () => { throw new Error("fixture"); }), /fixture/);
-  assert.deepEqual([state.theme, state.defaultTextStyle, state.defaultStylePrefix], original);
+  const original = [state.theme, state.defaultTextStyle, state.defaultStylePrefix, state.renderInlineTokens];
+  const ownInlineRender = Object.hasOwn(state, "renderInlineTokens");
+  assert.throws(() => withMarkdownStyle(markdown, theme, { ...defaultConfig().assistant, inlineCode: "#FFFFAA", link: "#80DFFF" }, () => { throw new Error("fixture"); }), /fixture/);
+  assert.deepEqual([state.theme, state.defaultTextStyle, state.defaultStylePrefix, state.renderInlineTokens], original);
+  assert.equal(Object.hasOwn(state, "renderInlineTokens"), ownInlineRender);
 });

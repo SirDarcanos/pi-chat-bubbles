@@ -12,6 +12,15 @@ export function colorText(value: BubbleColor, theme: Theme): (text: string) => s
   return text => ansi + text + "\x1b[39m";
 }
 
+interface InlineToken {
+  type: string;
+  tokens?: InlineToken[];
+}
+interface InlineStyleContext {
+  applyText: (text: string) => string;
+  stylePrefix: string;
+}
+
 /** Pi exposes no per-message style setter. Scope private style changes to the
  * native render call, retaining Markdown identity and restoring even on failure.
  * Never match ANSI colors: distinct Markdown roles may share the same color. */
@@ -24,7 +33,11 @@ export function withMarkdownStyle<T>(markdown: Markdown, theme: Theme, options: 
     theme: MarkdownTheme;
     defaultTextStyle?: DefaultTextStyle;
     defaultStylePrefix?: string;
+    renderInlineTokens: (tokens: InlineToken[], context?: InlineStyleContext) => string;
+    getDefaultInlineStyleContext: () => InlineStyleContext;
   };
+  const originalInlineRender = state.renderInlineTokens;
+  const ownInlineRender = Object.hasOwn(state, "renderInlineTokens");
   const originalTheme = state.theme;
   const originalStyle = state.defaultTextStyle;
   const originalPrefix = state.defaultStylePrefix;
@@ -40,7 +53,24 @@ export function withMarkdownStyle<T>(markdown: Markdown, theme: Theme, options: 
     if (assistant) {
       state.theme = { ...originalTheme };
       if (assistant.heading !== "theme") state.theme.heading = colorText(assistant.heading, theme);
-      if (assistant.link !== "theme") state.theme.link = state.theme.linkUrl = colorText(assistant.link, theme);
+      if (assistant.link !== "theme") {
+        const linkColor = colorText(assistant.link, theme);
+        state.theme.link = state.theme.linkUrl = linkColor;
+        const labels = new WeakSet<InlineToken[]>();
+        // Native headings color each label text before wrapping it with link().
+        // Give only link-label plain text an inner link color; preserve the
+        // heading's bold/underline, nested inline-code colors, and token identity.
+        state.renderInlineTokens = (tokens, context) => {
+          for (const token of tokens) {
+            if (token.type === "link" && token.tokens) labels.add(token.tokens);
+          }
+          if (labels.has(tokens)) {
+            const enclosing = context ?? state.getDefaultInlineStyleContext();
+            context = { ...enclosing, applyText: text => enclosing.applyText(linkColor(text)) };
+          }
+          return originalInlineRender.call(markdown, tokens, context);
+        };
+      }
       if (assistant.inlineCode !== "theme") state.theme.code = colorText(assistant.inlineCode, theme);
     }
     state.defaultStylePrefix = undefined;
@@ -50,6 +80,8 @@ export function withMarkdownStyle<T>(markdown: Markdown, theme: Theme, options: 
     state.theme = originalTheme;
     state.defaultTextStyle = originalStyle;
     state.defaultStylePrefix = originalPrefix;
+    if (ownInlineRender) state.renderInlineTokens = originalInlineRender;
+    else Reflect.deleteProperty(state, "renderInlineTokens");
     markdown.invalidate();
   }
 }
