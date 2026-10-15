@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { AssistantMessageComponent, UserMessageComponent, initTheme } from "@earendil-works/pi-coding-agent";
 import { theme } from "../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/theme/theme.js";
 import chatBubbles from "../chat-bubbles.ts";
+import { stripTerminalSequences } from "@earendil-works/pi-tui";
 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -60,4 +61,28 @@ test("startup warns on bad fields and reload reads changed config without retain
     assert.deepEqual([user.render(100), reply.render(100)], native);
   }
   assert.notDeepEqual(snapshots[0], snapshots[1]);
+});
+
+test("reload moves retained user and assistant messages to either configured edge", () => {
+  const user = new UserMessageComponent("User fixture");
+  const reply = new AssistantMessageComponent({ role: "assistant", content: [{ type: "text", text: "Reply fixture" }], stopReason: "stop" } as any, true);
+  const native = [user.render(100), reply.render(100)];
+  const snapshots: string[][][] = [];
+  for (const alignment of ["left", "right", "left", "right"]) {
+    writeFileSync(join(agentDir, "chat-bubbles.json"), JSON.stringify({ user: { alignment }, assistant: { alignment } }));
+    const events = new Map<string, Function>();
+    chatBubbles({ on: (name: string, callback: Function) => events.set(name, callback) } as any);
+    try {
+      events.get("session_start")!({}, { mode: "tui", ui: { theme, notify: () => assert.fail("valid alignment must not warn") } });
+      const rendered = [user.render(100), reply.render(100)];
+      for (const [index, text] of ["User fixture", "Reply fixture"].entries()) {
+        const row = rendered[index].map(stripTerminalSequences).find(line => line.includes(text))!;
+        assert.ok(alignment === "left" ? row.indexOf(text) < 10 : row.indexOf(text) > 50);
+      }
+      snapshots.push(rendered);
+    } finally { events.get("session_shutdown")!(); }
+    assert.deepEqual([user.render(100), reply.render(100)], native);
+  }
+  assert.deepEqual(snapshots[0], snapshots[2]);
+  assert.deepEqual(snapshots[1], snapshots[3]);
 });

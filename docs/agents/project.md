@@ -2,9 +2,9 @@
 
 ## Purpose and stage
 
-`pi-chat-bubbles` is a TypeScript Pi extension that makes the conversation distinguishable from tool activity. User messages align right; assistant prose aligns left. Both have padded backgrounds and content-sized widths capped at 90% of the terminal by default. Users can configure each cap with percentages only, and override bubble backgrounds, prose colors, and assistant heading/link/inline-code colors in the agent directory's `chat-bubbles.json`.
+`pi-chat-bubbles` is a TypeScript Pi extension that makes the conversation distinguishable from tool activity. User messages align right and assistant prose aligns left by default; each role can independently align left or right. Both have padded backgrounds and content-sized widths capped at 90% of the terminal by default. Users can configure each alignment and cap (percentages only), and override bubble backgrounds, prose colors, and assistant heading/link/inline-code colors in the agent directory's `chat-bubbles.json`.
 
-The package is maintained by SirDarcanos, with a public GitHub repository and planned npm distribution for Pi. Version `0.1.0` in the manifest is a development version, not evidence of a published release. No adoption or scale target has been established.
+The package is maintained by SirDarcanos, with a public GitHub repository and npm distribution for Pi. Version `0.1.0` was published to npm on 2026-10-15; the manifest remains at that version until an approved release bump. No adoption or scale target has been established.
 
 ## Scope and constraints
 

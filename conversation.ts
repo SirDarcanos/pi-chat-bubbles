@@ -1,9 +1,9 @@
 import { UserMessageComponent, type Theme } from "@earendil-works/pi-coding-agent";
 import { Markdown, backgroundAnsi, stripTerminalSequences, truncateToWidth, visibleWidth, type TuiMouseEvent } from "@earendil-works/pi-tui";
-import { defaultConfig, maximumWidth, type BubbleOptions } from "./config.ts";
+import { bubbleInset, defaultConfig, maximumWidth, type BubbleOptions } from "./config.ts";
 import { resolveColor, withMarkdownStyle } from "./bubble-style.ts";
 
-/** Padded right-aligned user bubbles; native replies stay on the left. */
+/** Padded user bubbles aligned to their configured transcript edge. */
 export function installConversationLayout(getTheme: () => Theme, options: BubbleOptions = defaultConfig().user): () => void {
   const proto = UserMessageComponent.prototype;
   const nativeRender = proto.render;
@@ -40,7 +40,7 @@ export function installConversationLayout(getTheme: () => Theme, options: Bubble
       const bounded = visibleWidth(line) > inner ? truncateToWidth(line, inner) : line;
       return fill(" ".repeat(side)) + bounded + fill(" ".repeat(side));
     }), padding];
-    const inset = Math.max(0, width - pad - bubbleWidth);
+    const inset = bubbleInset(width, bubbleWidth, pad, options.alignment);
     layout.set(this, { inset, width: inner, side });
     return body.map((line, index) => {
       const bounded = visibleWidth(line) > bubbleWidth ? truncateToWidth(line, bubbleWidth) : line;

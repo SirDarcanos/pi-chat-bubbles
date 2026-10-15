@@ -4,6 +4,7 @@ import { getAgentDir } from "@earendil-works/pi-coding-agent";
 
 export type BubbleColor = "theme" | `#${string}`;
 export interface BubbleOptions {
+  alignment: "left" | "right";
   maxWidth: `${number}%`;
   background: BubbleColor;
   text: BubbleColor;
@@ -20,8 +21,8 @@ export interface BubbleConfig {
 
 export function defaultConfig(): BubbleConfig {
   return {
-    user: { maxWidth: "90%", background: "theme", text: "theme" },
-    assistant: { maxWidth: "90%", background: "theme", text: "theme", heading: "theme", link: "theme", inlineCode: "theme" },
+    user: { alignment: "right", maxWidth: "90%", background: "theme", text: "theme" },
+    assistant: { alignment: "left", maxWidth: "90%", background: "theme", text: "theme", heading: "theme", link: "theme", inlineCode: "theme" },
   };
 }
 
@@ -51,7 +52,10 @@ export function parseConfig(value: unknown): { config: BubbleConfig; warnings: s
     for (const key of Object.keys(options) as Array<keyof typeof options>) {
       const setting = input[key];
       if (setting === undefined) continue;
-      if (key === "maxWidth") {
+      if (key === "alignment") {
+        if (setting === "left" || setting === "right") options.alignment = setting;
+        else warnings.push(`${role}.alignment: expected "left" or "right"; using ${options.alignment}.`);
+      } else if (key === "maxWidth") {
         if (typeof setting === "string" && /^(?:\d+(?:\.\d+)?)%$/.test(setting)
           && Number.parseFloat(setting) > 0 && Number.parseFloat(setting) <= 100) {
           options.maxWidth = setting as BubbleOptions["maxWidth"];
@@ -77,6 +81,12 @@ export function loadConfig(path = join(getAgentDir(), "chat-bubbles.json")): Ret
   } catch {
     return { config: defaultConfig(), warnings: ["Invalid JSON in chat-bubbles.json; using defaults."] };
   }
+}
+
+/** Keep the host transcript margin at the chosen edge. */
+export function bubbleInset(width: number, bubbleWidth: number, outputPad: number, alignment: BubbleOptions["alignment"]): number {
+  const margin = Math.min(outputPad, Math.max(0, width - 1));
+  return alignment === "left" ? margin : Math.max(0, width - margin - bubbleWidth);
 }
 
 /** A percentage caps the whole bubble, including its painted padding. */
