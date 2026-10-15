@@ -1,5 +1,10 @@
 # pi-chat-bubbles
 
+![User messages on the right and assistant replies on the left](https://raw.githubusercontent.com/SirDarcanos/pi-chat-bubbles/main/docs/images/chat-bubbles.png)
+
+[![npm version](https://img.shields.io/npm/v/pi-chat-bubbles?style=for-the-badge)](https://www.npmjs.com/package/pi-chat-bubbles)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
 Conversation bubbles for Pi. By default, your messages sit on the right and assistant replies sit on the left; each role can use either side.
 
 - Content-sized bubbles, up to 90% of the terminal width by default.
