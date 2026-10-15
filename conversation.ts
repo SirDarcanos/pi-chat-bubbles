@@ -1,8 +1,10 @@
 import { UserMessageComponent, type Theme } from "@earendil-works/pi-coding-agent";
-import { stripTerminalSequences, truncateToWidth, visibleWidth, type TuiMouseEvent } from "@earendil-works/pi-tui";
+import { Markdown, backgroundAnsi, stripTerminalSequences, truncateToWidth, visibleWidth, type TuiMouseEvent } from "@earendil-works/pi-tui";
+import { defaultConfig, maximumWidth, type BubbleOptions } from "./config.ts";
+import { resolveColor, withMarkdownStyle } from "./bubble-style.ts";
 
 /** Padded right-aligned user bubbles; native replies stay on the left. */
-export function installConversationLayout(getTheme: () => Theme): () => void {
+export function installConversationLayout(getTheme: () => Theme, options: BubbleOptions = defaultConfig().user): () => void {
   const proto = UserMessageComponent.prototype;
   const nativeRender = proto.render;
   const nativeMouse = proto.handleMouse;
@@ -12,21 +14,27 @@ export function installConversationLayout(getTheme: () => Theme): () => void {
     if (width <= 0) return [];
     const pad = (this as any).outputPad ?? 1;
     const available = Math.max(1, width - pad);
-    const maximum = Math.max(1, Math.min(available, Math.floor(width * 0.9)));
-    const side = width >= 50 ? 1 : 0;
+    const maximum = maximumWidth(width, available, options.maxWidth);
+    const side = width >= 50 && maximum >= 3 ? 1 : 0;
     const contentMaximum = Math.max(1, maximum - side * 2);
-    const preview = nativeRender.call(this, contentMaximum);
+    const theme = getTheme();
+    const styledRender = (columns: number) => {
+      const markdown = this.children.find(child => child instanceof Markdown);
+      const renderNative = () => nativeRender.call(this, columns);
+      return markdown instanceof Markdown ? withMarkdownStyle(markdown, theme, options, renderNative) : renderNative();
+    };
+    const preview = styledRender(contentMaximum);
     const measured = Math.max(1, ...preview.map(line => visibleWidth(stripTerminalSequences(line).trimEnd())));
     const inner = Math.min(contentMaximum, Math.max(4, measured + pad));
-    const native = nativeRender.call(this, inner);
+    const native = styledRender(inner);
     if (!native.length) return [];
     const startMarkers = native[0].match(/\x1b\]133;[ABC]\x07/g)?.join("") ?? "";
     const endMarkers = native.at(-1)!.match(/\x1b\]133;[ABC]\x07/g)?.join("") ?? "";
     // Paint equal top/bottom padding explicitly: native blank rows are not
     // guaranteed to carry a background. Keep Markdown body styling intact.
-    const theme = getTheme();
     const bubbleWidth = inner + side * 2;
-    const fill = (text: string) => theme.bg("userMessageBg", text);
+    const background = backgroundAnsi(resolveColor(options.background, theme.colors.userMessageBg), theme.getColorMode());
+    const fill = (text: string) => options.background === "theme" ? theme.bg("userMessageBg", text) : background + text + "\x1b[49m";
     const padding = fill(" ".repeat(bubbleWidth));
     const body = [padding, ...native.slice(1, -1).map(line => {
       const bounded = visibleWidth(line) > inner ? truncateToWidth(line, inner) : line;

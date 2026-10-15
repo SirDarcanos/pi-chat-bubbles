@@ -2,11 +2,11 @@
 
 ## Approved mode: none
 
-This policy concerns additional model consultations and assessment services beyond the primary coding assistant requested by the user.
+This policy concerns additional model consultations and assessment services beyond the primary coding assistant requested by the user. Native independent delivery-review subagents are governed by the workflow's standing review approval, not this policy's auxiliary-assessment allowance.
 
 There is no standing permission for autonomous auxiliary model requests, whether local or hosted. Across the project, the shared authorized allowance is **zero requests, zero retries, zero evidence-correction calls, and zero spend in any currency**. Service startup, downloads, installation, credential changes, and substitution are not authorized.
 
-Provider/model identities, endpoints, service owners, and budget ledgers are not applicable because no route is permitted. Hand-offs, resumed sessions, and workers do not create fresh allowances. Delegation separately requires explicit approval under the [workflow](workflow.md).
+Provider/model identities, endpoints, service owners, and budget ledgers are not applicable because no route is permitted. Hand-offs, resumed sessions, and workers do not create fresh allowances. The [workflow](workflow.md) grants standing approval for bounded, read-only independent delivery reviews through the existing subagent runtime. Other delegation still requires explicit approval.
 
 Use ordinary engineering inspection, deterministic checks, and direct reasoning as the fallback. If those cannot answer a consequential question, describe the evidence gap and request approval rather than invoking a service.
 
@@ -23,3 +23,5 @@ Keep credentials and private conversation evidence outside repository documents.
 Ordinary engineering and rendering tests meet this package's current needs. Additional model services are unnecessary for its baseline workflow.
 
 SirDarcanos approved the setup plan and these boundaries in the project setup conversation on 2026-10-15 (“Yes all approved”). The policy remains in force until explicitly revised; a setup rerun does not renew or expand permission. This document establishes authority, not runtime enforcement.
+
+SirDarcanos subsequently approved independent delivery reviews without repeated permission requests in the bubble-configuration delivery conversation (“you do not need to ask permission to do that”). The workflow records that bounded exception; auxiliary assessment services remain unapproved.

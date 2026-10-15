@@ -20,6 +20,8 @@
   },
   "files": [
     "chat-bubbles.ts",
+    "config.ts",
+    "bubble-style.ts",
     "conversation.ts",
     "reply-bubbles.ts",
     "README.md",

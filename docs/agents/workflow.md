@@ -2,7 +2,7 @@
 
 ## Authority
 
-SirDarcanos owns product, design, release, and repository-policy decisions. Agents may inspect and implement a requested change and run safe local checks. Obtain explicit approval before commits, pushes, PR creation or merge, publishing, deployment, spending, destructive operations, credential changes, global installations, or delegation. The [model-use policy](model-use.md) governs auxiliary assessments separately.
+SirDarcanos owns product, design, release, and repository-policy decisions. Agents may inspect and implement a requested change and run safe local checks. Obtain explicit approval before commits, pushes, PR creation or merge, publishing, deployment, spending, destructive operations, credential changes, global installations, or delegation other than the independent delivery reviews authorized below. The [model-use policy](model-use.md) governs auxiliary assessments separately.
 
 The initial setup approval on 2026-10-15 permits the documented dependency installation, GitHub configuration, first commit, and first push. It is not continuing authority for later commits or releases. Preserve unrelated work and ask when approval or ownership is unclear.
 
@@ -14,7 +14,7 @@ The executable check definitions live in [package.json](../../package.json) and 
 
 Choose regression tests by the failure being protected, not a coverage quota. For rendering changes, inspect a rendered fixture and test relevant widths, streaming, theme updates, terminal markers, and reload restoration. Request a live screenshot when terminal behavior cannot be established locally. Automated preview success does not prove the user's terminal looks correct.
 
-Before an approved commit/push, inspect the exact staged file list and diff for logs, secrets, private paths, generated previews, and unintended changes. Report checks actually run, failures, and limitations. Independent review or auxiliary services require their own approval.
+Before an approved commit/push, inspect the exact staged file list and diff for logs, secrets, private paths, generated previews, and unintended changes. Report checks actually run, failures, and limitations. Independent delivery reviews have standing approval: launch bounded, read-only Standards and Spec reviewers through the existing subagent runtime without asking again. Keep at most two reviewers active, give each a finite assignment, and limit access to the task's source, agreement, and verification evidence. This approval covers review only; other delegation and auxiliary assessment services retain their separate permission gates.
 
 ## Versioning and releases
 
