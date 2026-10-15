@@ -31,6 +31,8 @@ Add a concise Unreleased entry for notable user-facing changes. Documentation-on
 
 Version bumps, tags, GitHub releases, and npm publication each require explicit approval. Release preparation checks the aggregate changelog, clean-install checks, package contents, and current name/credential availability. Setup does not provision npm credentials or trusted publishing.
 
+Preserve the `pi-package` keyword and declared `pi.extensions` entry in the published manifest. [Pi's package documentation](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md#create-a-package) identifies that keyword as the gallery-discovery requirement. The [Packages page](https://pi.dev/packages) lists npm-published packages; GitHub availability and local metadata alone do not establish a live listing. After an approved npm publication, verify public registry metadata and the gallery listing separately, reporting pending indexing rather than claiming discovery before it is observed.
+
 ## Documentation maintenance
 
 Update the authoritative home when an approved change alters its facts:
