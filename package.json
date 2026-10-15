@@ -1,0 +1,53 @@
+{
+  "name": "pi-chat-bubbles",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SirDarcanos/pi-chat-bubbles.git"
+  },
+  "homepage": "https://github.com/SirDarcanos/pi-chat-bubbles#readme",
+  "bugs": {
+    "url": "https://github.com/SirDarcanos/pi-chat-bubbles/issues"
+  },
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "chat-bubbles.ts",
+    "conversation.ts",
+    "reply-bubbles.ts",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "description": "Padded chat bubbles for Pi: user messages on the right, replies on the left.",
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "extensions": [
+      "./chat-bubbles.ts"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=1.2.0",
+    "@earendil-works/pi-tui": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "1.2.0",
+    "@earendil-works/pi-tui": "1.2.0",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "tsx": "^4.20.0"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts"
+  }
+}
