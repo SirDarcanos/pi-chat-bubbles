@@ -4,7 +4,7 @@
 
 `pi-chat-bubbles` is a TypeScript Pi extension that makes the conversation distinguishable from tool activity. User messages align right and assistant prose aligns left by default; each role can independently align left or right. Both have padded backgrounds and content-sized widths capped at 90% of the terminal by default. Users can configure each alignment and cap (percentages only), and override bubble backgrounds, prose colors, and assistant heading/link/inline-code colors in the agent directory's `chat-bubbles.json`.
 
-The package is maintained by SirDarcanos, with a public GitHub repository and npm distribution for Pi. Version `0.1.0` was published to npm on 2026-10-15; the manifest remains at that version until an approved release bump. No adoption or scale target has been established.
+The package is maintained by SirDarcanos, with a public GitHub repository and npm distribution for Pi. The first release, `0.1.0`, was published to npm on 2026-10-15. The manifest owns the source version; public npm metadata establishes which versions are published. No adoption or scale target has been established.
 
 ## Scope and constraints
 
@@ -18,4 +18,4 @@ The implementation patches native component methods because there is no message-
 
 Agents own routine engineering choices within the approved task. SirDarcanos approves visual design, product scope, consequential permissions, and releases. Explain visible differences plainly and distinguish automated evidence from live terminal observation.
 
-Use synthetic fixtures in tests and previews. Real prompts, screenshots, task logs, credentials, and machine-specific settings stay outside committed or published files. Terminal cells cannot reproduce smooth pixel-rounded corners; preserve readability rather than promising browser-style geometry.
+Use synthetic fixtures in tests and generated previews. The maintainer explicitly approved `docs/images/chat-bubbles.png` for the public README; other real prompts, screenshots, task logs, credentials, and machine-specific settings stay outside committed or published files. Terminal cells cannot reproduce smooth pixel-rounded corners; preserve readability rather than promising browser-style geometry.

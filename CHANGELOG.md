@@ -4,7 +4,7 @@ Notable user-facing changes are recorded here before release.
 This package follows Semantic Versioning; pre-1.0 rules and release authority
 are defined in [the workflow](https://github.com/SirDarcanos/pi-chat-bubbles/blob/main/docs/agents/workflow.md#versioning-and-releases).
 
-## Unreleased
+## 0.2.0
 
 ### Added
 
