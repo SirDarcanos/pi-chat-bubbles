@@ -47,7 +47,7 @@ test("independent percentage caps include padding, even at tiny percentages and 
 });
 
 test("hex colors cover user body and padding, while Markdown accents stay native", () => {
-  const options = { ...defaultConfig().user, background: "#123456", text: "#FEDCBA" } as const;
+  const options = { ...defaultConfig().user, background: "#D02060", text: "#FEDCBA" } as const;
   const user = new UserMessageComponent("Normal user prose with `code`. ");
   const native = user.render(100);
   const restore = installConversationLayout(() => theme, options);
@@ -58,6 +58,9 @@ test("hex colors cover user body and padding, while Markdown accents stay native
     const body = lines.find(line => stripTerminalSequences(line).includes("Normal user"))!;
     assert.ok(body.includes(bg(options.background)));
     assert.equal(foregroundAt(lines, "Normal user"), fg(options.text));
+    // Distinct RGB colors can quantize to the same 256-color palette entry.
+    // Keep this fixture distinct in both modes so absence detects stale native paint.
+    assert.notEqual(bg(options.background), theme.getBgAnsi("userMessageBg"));
     assert.ok(!body.includes(theme.getBgAnsi("userMessageBg")));
     assert.ok(body.includes(theme.getFgAnsi("mdCode")));
     assert.equal(user.render(100).join("\n"), lines.join("\n"), "no stale style cache or accumulated padding");
