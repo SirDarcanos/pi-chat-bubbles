@@ -26,9 +26,17 @@
     "LICENSE",
     "CHANGELOG.md"
   ],
-  "description": "Padded chat bubbles for Pi: user messages on the right, replies on the left.",
+  "description": "Chat bubble UI for the Pi coding agent: padded user messages on the right and distinct assistant replies on the left.",
   "keywords": [
-    "pi-package"
+    "pi-package",
+    "pi-extension",
+    "pi-coding-agent",
+    "chat-bubbles",
+    "chat-ui",
+    "terminal-ui",
+    "tui",
+    "terminal",
+    "coding-assistant"
   ],
   "pi": {
     "extensions": [
