@@ -1,9 +1,9 @@
 # pi-chat-bubbles
 
-Conversation bubbles for Pi. Your messages sit on the right; assistant replies sit on the left.
+Conversation bubbles for Pi. By default, your messages sit on the right and assistant replies sit on the left; each role can use either side.
 
 - Content-sized bubbles, up to 90% of the terminal width by default.
-- Configurable widths and bubble colors, including assistant Markdown accents.
+- Configurable alignment, widths, and bubble colors, including assistant Markdown accents.
 - Balanced padding, without labels or borders.
 - Native Markdown and terminal message markers preserved.
 - Thinking, errors, tool output, and attachments keep their existing renderers.
@@ -14,16 +14,16 @@ This package only styles chat messages. It does not compact context, register to
 
 Requires Node.js 22.19 or newer and Pi 1.2 or newer.
 
-Until the first npm release, install from GitHub:
-
-```sh
-pi install git:github.com/SirDarcanos/pi-chat-bubbles
-```
-
-After a release is published to npm:
+Install from npm:
 
 ```sh
 pi install npm:pi-chat-bubbles
+```
+
+Or install from GitHub:
+
+```sh
+pi install git:github.com/SirDarcanos/pi-chat-bubbles
 ```
 
 For local development, run `pi install "$PWD"` from the package directory.
@@ -39,11 +39,13 @@ All settings are optional. These are the defaults:
 ```json
 {
   "user": {
+    "alignment": "right",
     "maxWidth": "90%",
     "background": "theme",
     "text": "theme"
   },
   "assistant": {
+    "alignment": "left",
     "maxWidth": "90%",
     "background": "theme",
     "text": "theme",
@@ -56,12 +58,24 @@ All settings are optional. These are the defaults:
 
 | Setting | Accepted values | Effect |
 | --- | --- | --- |
+| `alignment` | `"left"` or `"right"` | Aligns that role’s bubbles to the chosen edge. Defaults: user right, assistant left. |
 | `maxWidth` | Percentage string greater than `0%` and up to `100%`, including decimals | Caps the whole bubble, including padding, relative to terminal width. Short content stays compact. |
 | `background` | `"theme"` or `"#RRGGBB"` | Bubble surface and padding. |
 | `text` | `"theme"` or `"#RRGGBB"` | Ordinary prose, preserving Markdown colors. |
 | `assistant.heading` | `"theme"` or `"#RRGGBB"` | Markdown headings. |
 | `assistant.link` | `"theme"` or `"#RRGGBB"` | Link text and displayed URLs. |
 | `assistant.inlineCode` | `"theme"` or `"#RRGGBB"` | Inline code, leaving code-block syntax highlighting unchanged. |
+
+To put both roles on the left:
+
+```json
+{
+  "user": { "alignment": "left" },
+  "assistant": { "alignment": "left" }
+}
+```
+
+Use `"right"` for both to put them on the right, or set each role independently. Alignment changes only message bubbles; thinking, errors, tools, and attachments keep their existing renderers. Changes take effect after `/reload`.
 
 Widths accept **only percentages**: `"75%"` is valid; `75`, `"75px"`, `"40rem"`, and other units are not. At very narrow widths, layout retains at least one terminal cell and may clip wide characters. Existing outer transcript margins still apply at `"100%"`.
 
@@ -109,7 +123,7 @@ Node 24 is used in CI. Pinned development copies of Pi and its TUI make these ch
 - `chat-bubbles.ts`: extension entry point and lifecycle.
 - `config.ts`: configuration defaults, validation, and file loading.
 - `bubble-style.ts`: render-scoped Markdown color overrides.
-- `conversation.ts`: right-aligned user bubbles and mouse-coordinate translation.
+- `conversation.ts`: user bubble alignment and mouse-coordinate translation.
 - `reply-bubbles.ts`: left-aligned prose bubbles; preserves Markdown identity for other extensions.
 - `tests/`: layout, narrow-width, terminal-control, streaming, theme, loader, and reload checks.
 

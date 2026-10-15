@@ -17,6 +17,27 @@ test("defaults and partial role settings", () => {
   assert.equal(config.assistant.inlineCode, "#123456");
 });
 
+test("alignment is independent per role, defaults safely, and accepts only left or right", () => {
+  const defaults = parseConfig({}).config;
+  assert.equal(defaults.user.alignment, "right");
+  assert.equal(defaults.assistant.alignment, "left");
+  for (const user of ["left", "right"]) for (const assistant of ["left", "right"]) {
+    const result = parseConfig({ user: { alignment: user }, assistant: { alignment: assistant } });
+    assert.deepEqual(result.warnings, []);
+    assert.equal(result.config.user.alignment, user);
+    assert.equal(result.config.assistant.alignment, assistant);
+  }
+  for (const alignment of ["center", "LEFT", "", "theme", "#123456", null, false, 0, {}]) {
+    const result = parseConfig({ user: { alignment, maxWidth: "60%" }, assistant: { alignment } });
+    assert.equal(result.config.user.alignment, "right");
+    assert.equal(result.config.assistant.alignment, "left");
+    assert.equal(result.config.user.maxWidth, "60%");
+    assert.equal(result.warnings.length, 2);
+    assert.match(result.warnings[0], /user.alignment/);
+    assert.match(result.warnings[1], /assistant.alignment/);
+  }
+});
+
 test("only percentages in (0, 100] are accepted", () => {
   for (const maxWidth of [90, 0.9, "90", "90px", "90rem", "90vw", "0%", "-1%", "100.1%", "NaN%", "Infinity%", "1e2%", " 90%", null, {}]) {
     const result = parseConfig({ user: { maxWidth } });

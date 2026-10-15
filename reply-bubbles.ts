@@ -1,6 +1,6 @@
 import { AssistantMessageComponent, type Theme } from "@earendil-works/pi-coding-agent";
 import { Markdown, backgroundAnsi, foregroundAnsi, mixColors, rgbColor, stripTerminalSequences, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
-import { defaultConfig, maximumWidth, type AssistantOptions } from "./config.ts";
+import { bubbleInset, defaultConfig, maximumWidth, type AssistantOptions } from "./config.ts";
 import { resolveColor, withMarkdownStyle } from "./bubble-style.ts";
 
 /** Distinct reply surface, derived from the active palette rather than tool styling. */
@@ -27,8 +27,8 @@ export function installReplyBubbles(getTheme: () => Theme, options: AssistantOpt
     function render(this: Markdown, width: number): string[] {
       if (!active) return native.call(this, width);
       if (width <= 0) return [];
-      const inset = Math.min(outputPad, Math.max(0, width - 1));
-      const maximum = maximumWidth(width, width - inset, options.maxWidth);
+      const margin = Math.min(outputPad, Math.max(0, width - 1));
+      const maximum = maximumWidth(width, width - margin, options.maxWidth);
       const side = width >= 50 && maximum >= 3 ? 1 : 0;
       const contentMaximum = Math.max(1, maximum - side * 2);
       const theme = getTheme();
@@ -47,6 +47,7 @@ export function installReplyBubbles(getTheme: () => Theme, options: AssistantOpt
           return reset + (code === "39" ? foreground : background);
         }) + "\x1b[39;49m";
       const bubbleWidth = inner + side * 2;
+      const inset = bubbleInset(width, bubbleWidth, outputPad, options.alignment);
       const left = " ".repeat(inset);
       const padding = left + fill(" ".repeat(bubbleWidth));
       return [padding, ...body.map(line => {
