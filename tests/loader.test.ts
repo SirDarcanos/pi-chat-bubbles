@@ -13,6 +13,7 @@ test("npm metadata retains Pi gallery eligibility and public package links", () 
   assert.equal(manifest.publishConfig.registry, "https://registry.npmjs.org/");
   assert.equal(manifest.repository.url, "git+https://github.com/SirDarcanos/pi-chat-bubbles.git");
   assert.equal(manifest.homepage, "https://github.com/SirDarcanos/pi-chat-bubbles#readme");
+  for (const helper of ["config.ts", "bubble-style.ts", "conversation.ts", "reply-bubbles.ts"]) assert.ok(manifest.files.includes(helper), `${helper} must ship with the entry point`);
   for (const entry of manifest.pi.extensions) assert.ok(manifest.files.includes(entry.replace(/^\.\//, "")), "declared Pi extensions must ship in the npm package");
 });
 

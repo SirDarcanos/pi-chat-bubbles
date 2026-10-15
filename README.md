@@ -2,7 +2,8 @@
 
 Conversation bubbles for Pi. Your messages sit on the right; assistant replies sit on the left.
 
-- Content-sized bubbles, up to 90% of the terminal width.
+- Content-sized bubbles, up to 90% of the terminal width by default.
+- Configurable widths and bubble colors, including assistant Markdown accents.
 - Balanced padding, without labels or borders.
 - Native Markdown and terminal message markers preserved.
 - Thinking, errors, tool output, and attachments keep their existing renderers.
@@ -29,16 +30,67 @@ For local development, run `pi install "$PWD"` from the package directory.
 
 Run `/reload` in Pi. Install the package once; do not also load `chat-bubbles.ts` through the `extensions` setting.
 
-## Colors
+## Configuration
 
-Bubbles use the active Pi theme:
+Create `~/.pi/agent/chat-bubbles.json`, then run `/reload`. If you set `PI_CODING_AGENT_DIR`, put the file in that directory instead. This is a separate package configuration file, not Pi's `settings.json`. The extension reads it at startup and on reload; it does not create or rewrite it.
+
+All settings are optional. These are the defaults:
+
+```json
+{
+  "user": {
+    "maxWidth": "90%",
+    "background": "theme",
+    "text": "theme"
+  },
+  "assistant": {
+    "maxWidth": "90%",
+    "background": "theme",
+    "text": "theme",
+    "heading": "theme",
+    "link": "theme",
+    "inlineCode": "theme"
+  }
+}
+```
+
+| Setting | Accepted values | Effect |
+| --- | --- | --- |
+| `maxWidth` | Percentage string greater than `0%` and up to `100%`, including decimals | Caps the whole bubble, including padding, relative to terminal width. Short content stays compact. |
+| `background` | `"theme"` or `"#RRGGBB"` | Bubble surface and padding. |
+| `text` | `"theme"` or `"#RRGGBB"` | Ordinary prose, preserving Markdown colors. |
+| `assistant.heading` | `"theme"` or `"#RRGGBB"` | Markdown headings. |
+| `assistant.link` | `"theme"` or `"#RRGGBB"` | Link text and displayed URLs. |
+| `assistant.inlineCode` | `"theme"` or `"#RRGGBB"` | Inline code, leaving code-block syntax highlighting unchanged. |
+
+Widths accept **only percentages**: `"75%"` is valid; `75`, `"75px"`, `"40rem"`, and other units are not. At very narrow widths, layout retains at least one terminal cell and may clip wide characters. Existing outer transcript margins still apply at `"100%"`.
+
+Colors accept six-digit hex strings (case-insensitive) or the literal `"theme"`. To replace purple assistant accents with lighter colors on the default dark bubble, for example:
+
+```json
+{
+  "assistant": {
+    "heading": "#FFD166",
+    "link": "#80DFFF",
+    "inlineCode": "#FFE0A3"
+  }
+}
+```
+
+Explicit colors stay fixed when the theme changes; choose colors with enough contrast for your background. There is no automatic contrast adjustment for overrides. These overrides affect only chat bubbles, not tools or the global Pi theme.
+
+Invalid individual settings produce a warning and use their defaults; valid sibling settings still apply. Unknown options are ignored with a warning. An unreadable file or invalid JSON uses all defaults. A missing file silently uses defaults.
+
+### Theme defaults
+
+`"theme"` preserves the existing theme-derived appearance:
 
 | Bubble | Background token |
 | --- | --- |
 | User | `userMessageBg` |
 | Assistant | `toolPendingBg` tinted 12% toward `mdLink` |
 
-Replies have a distinct, softly tinted surface (muted blue with the local theme) and higher-contrast prose. Reply text moves toward white in dark themes and black in light themes; Markdown accent and syntax colors are preserved. User bubbles are unchanged. The package does not ship or override a theme. Customize these tokens in your own Pi theme to adjust the colors.
+Replies have a distinct, softly tinted surface and higher-contrast prose. Reply text moves toward white in dark themes and black in light themes. User text uses `userMessageText`. Assistant headings, links, and inline code follow `mdHeading`, `mdLink`/`mdLinkUrl`, and `mdCode`. Code-block syntax colors are preserved. The package does not ship or override a global theme.
 
 ## Disable
 
@@ -55,6 +107,8 @@ npm test
 Node 24 is used in CI. Pinned development copies of Pi and its TUI make these checks independent of a global Pi installation.
 
 - `chat-bubbles.ts`: extension entry point and lifecycle.
+- `config.ts`: configuration defaults, validation, and file loading.
+- `bubble-style.ts`: render-scoped Markdown color overrides.
 - `conversation.ts`: right-aligned user bubbles and mouse-coordinate translation.
 - `reply-bubbles.ts`: left-aligned prose bubbles; preserves Markdown identity for other extensions.
 - `tests/`: layout, narrow-width, terminal-control, streaming, theme, loader, and reload checks.

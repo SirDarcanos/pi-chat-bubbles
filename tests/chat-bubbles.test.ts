@@ -1,6 +1,6 @@
-import { test } from "node:test";
+import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { AssistantMessageComponent, ToolExecutionComponent, UserMessageComponent, initTheme } from "@earendil-works/pi-coding-agent";
 import { Container, Markdown, Text, backgroundAnsi, colorToRgb, foregroundAnsi, stripTerminalSequences, visibleWidth } from "@earendil-works/pi-tui";
 import { theme, getThemeByName } from "../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/theme/theme.js";
@@ -8,6 +8,18 @@ import { renderLayoutFrame } from "../node_modules/@earendil-works/pi-tui/dist/l
 import { installConversationLayout } from "../conversation.ts";
 import { installReplyBubbles, replyColors } from "../reply-bubbles.ts";
 import chatBubbles from "../chat-bubbles.ts";
+
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+const agentDir = mkdtempSync(join(tmpdir(), "bubble-lifecycle-"));
+const previousAgentDir = process.env.PI_CODING_AGENT_DIR;
+before(() => { process.env.PI_CODING_AGENT_DIR = agentDir; });
+after(() => {
+  if (previousAgentDir === undefined) delete process.env.PI_CODING_AGENT_DIR;
+  else process.env.PI_CODING_AGENT_DIR = previousAgentDir;
+  rmSync(agentDir, { recursive: true, force: true });
+});
 
 initTheme("dark", false);
 const message = (text: string, thinking?: string) => ({ role: "assistant", content: [...(thinking ? [{ type: "thinking", thinking }] : []), { type: "text", text }], stopReason: "stop" } as any);

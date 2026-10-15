@@ -1,16 +1,18 @@
 import { AssistantMessageComponent, type Theme } from "@earendil-works/pi-coding-agent";
 import { Markdown, backgroundAnsi, foregroundAnsi, mixColors, rgbColor, stripTerminalSequences, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { defaultConfig, maximumWidth, type AssistantOptions } from "./config.ts";
+import { resolveColor, withMarkdownStyle } from "./bubble-style.ts";
 
 /** Distinct reply surface, derived from the active palette rather than tool styling. */
-export function replyColors(theme: Theme) {
+export function replyColors(theme: Theme, options: AssistantOptions = defaultConfig().assistant) {
   return {
-    background: mixColors(theme.colors.toolPendingBg, theme.colors.mdLink, 0.12, "srgb"),
-    foreground: mixColors(theme.colors.text, theme.appearance === "light" ? rgbColor(0, 0, 0) : rgbColor(255, 255, 255), 0.6, "srgb"),
+    background: resolveColor(options.background, mixColors(theme.colors.toolPendingBg, theme.colors.mdLink, 0.12, "srgb")),
+    foreground: resolveColor(options.text, mixColors(theme.colors.text, theme.appearance === "light" ? rgbColor(0, 0, 0) : rgbColor(255, 255, 255), 0.6, "srgb")),
   };
 }
 
 /** Style only prose, retaining Markdown identity for compact-tools silent mode. */
-export function installReplyBubbles(getTheme: () => Theme): () => void {
+export function installReplyBubbles(getTheme: () => Theme, options: AssistantOptions = defaultConfig().assistant): () => void {
   const proto = AssistantMessageComponent.prototype;
   const original = proto.render;
   const patched = new WeakSet<Markdown>();
@@ -26,16 +28,17 @@ export function installReplyBubbles(getTheme: () => Theme): () => void {
       if (!active) return native.call(this, width);
       if (width <= 0) return [];
       const inset = Math.min(outputPad, Math.max(0, width - 1));
-      const maximum = Math.max(1, Math.min(width - inset, Math.floor(width * 0.9)));
-      const side = width >= 50 ? 1 : 0;
+      const maximum = maximumWidth(width, width - inset, options.maxWidth);
+      const side = width >= 50 && maximum >= 3 ? 1 : 0;
       const contentMaximum = Math.max(1, maximum - side * 2);
-      const preview = native.call(this, contentMaximum);
+      const theme = getTheme();
+      const styledRender = (columns: number) => withMarkdownStyle(this, theme, options, () => native.call(this, columns));
+      const preview = styledRender(contentMaximum);
       if (!preview.length) return [];
       const measured = Math.max(1, ...preview.map(line => visibleWidth(stripTerminalSequences(line).trimEnd())));
       const inner = Math.min(contentMaximum, Math.max(4, measured + outputPad));
-      const body = native.call(this, inner);
-      const theme = getTheme();
-      const colors = replyColors(theme);
+      const body = styledRender(inner);
+      const colors = replyColors(theme, options);
       const background = backgroundAnsi(colors.background, theme.getColorMode());
       const foreground = foregroundAnsi(colors.foreground, theme.getColorMode());
       const fill = (text: string) => background + foreground

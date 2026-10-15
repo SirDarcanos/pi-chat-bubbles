@@ -1,8 +1,21 @@
-import { test } from "node:test";
+import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { AssistantMessageComponent, UserMessageComponent, initTheme } from "@earendil-works/pi-coding-agent";
 import { theme } from "../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/theme/theme.js";
 import chatBubbles from "../chat-bubbles.ts";
+
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+const agentDir = mkdtempSync(join(tmpdir(), "bubble-lifecycle-"));
+const previousAgentDir = process.env.PI_CODING_AGENT_DIR;
+before(() => { process.env.PI_CODING_AGENT_DIR = agentDir; });
+after(() => {
+  if (previousAgentDir === undefined) delete process.env.PI_CODING_AGENT_DIR;
+  else process.env.PI_CODING_AGENT_DIR = previousAgentDir;
+  rmSync(agentDir, { recursive: true, force: true });
+});
 
 initTheme("dark", false);
 
@@ -25,4 +38,26 @@ test("retained chat bubbles restore and reinstall across session reload without 
     assert.deepEqual(reply.render(100), nativeReply);
   }
   assert.deepEqual(snapshots[0], snapshots[1]);
+});
+
+test("startup warns on bad fields and reload reads changed config without retaining colors", () => {
+  const user = new UserMessageComponent("Long user fixture ".repeat(40));
+  const reply = new AssistantMessageComponent({ role: "assistant", content: [{ type: "text", text: "Long reply fixture ".repeat(40) }], stopReason: "stop" } as any, true);
+  const native = [user.render(100), reply.render(100)];
+  const path = join(agentDir, "chat-bubbles.json");
+  const snapshots: string[][][] = [];
+  for (const maxWidth of ["40%", "70%"]) {
+    writeFileSync(path, JSON.stringify({ user: { maxWidth, background: maxWidth === "40%" ? "#102030" : "theme", text: "invalid" }, assistant: { maxWidth } }));
+    const events = new Map<string, Function>();
+    const warnings: string[] = [];
+    chatBubbles({ on: (name: string, callback: Function) => events.set(name, callback) } as any);
+    try {
+      events.get("session_start")!({}, { mode: "tui", ui: { theme, notify: (text: string, level: string) => { assert.equal(level, "warning"); warnings.push(text); } } });
+      assert.equal(warnings.length, 1);
+      assert.match(warnings[0], /user.text/);
+      snapshots.push([user.render(100), reply.render(100)]);
+    } finally { events.get("session_shutdown")!(); }
+    assert.deepEqual([user.render(100), reply.render(100)], native);
+  }
+  assert.notDeepEqual(snapshots[0], snapshots[1]);
 });
